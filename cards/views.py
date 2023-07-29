@@ -130,8 +130,6 @@ def spotify_add_songs(request):
 
     check_user = requests.get('https://api.spotify.com/v1/me', headers=headers)
 
-    return JsonResponse({'user': check_user.json(), 'spot': os.environ.get('SPOTIFY_USER_ID'), 'valid': check_user.json()['id'] != os.environ.get('SPOTIFY_USER_ID')}, safe=False)
-
     if check_user.json()['id'] != os.environ.get('SPOTIFY_USER_ID'):  
         return HttpResponse('User is not authorized to update this playlist')
 
