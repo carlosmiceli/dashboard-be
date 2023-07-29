@@ -1,0 +1,21 @@
+[[source]]
+url = "https://pypi.org/simple"
+verify_ssl = true
+name = "pypi"
+
+[packages]
+django = "*"
+requests = "*"
+google-auth = "*"
+gspread = "*"
+openai = "*"
+django-cors-headers = "*"
+oauth2client = "*"
+python-dotenv = "*"
+gunicorn = "*"
+whitenoise = "*"
+
+[dev-packages]
+
+[requires]
+python_version = "3.10"
