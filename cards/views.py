@@ -3,26 +3,22 @@ import dotenv
 from urllib.parse import urlencode
 from datetime import datetime
 
-from django.http import HttpRequest, HttpResponse, JsonResponse, HttpResponseRedirect
-from django.shortcuts import render, redirect
-from django.conf import settings
+from django.http import HttpResponse, JsonResponse
+from django.shortcuts import render
 
 import random
 import requests
 import base64
 import json
-import logging
-
-# Load environment variables from .env file
-dotenv.load_dotenv()
+# import logging
+# logger = logging.getLogger(__name__)
 
 import gspread
-from oauth2client.service_account import ServiceAccountCredentials
 from google.oauth2 import service_account
 
 import openai
 
-logger = logging.getLogger(__name__)
+dotenv.load_dotenv()
 
 def index(request):
     return render(request, 'home.html')
@@ -58,21 +54,11 @@ def challenges(request):
     try:
         json_data = json.loads(os.environ.get('GOOGLE_SHEETS_JSON'))
 
-        logging.info('json data: %s', json_data)
-
-        # Load the credentials from the JSON file
         credentials = service_account.Credentials.from_service_account_info(json_data, scopes=['https://www.googleapis.com/auth/drive', 'https://www.googleapis.com/auth/spreadsheets'])
-
-        logging.info('credentials: %s', credentials)
 
         client = gspread.authorize(credentials)
 
-        logging.info('client: %s', client)
-
-        # Open the Google Sheet
         sheet = client.open('Daily Coding Problem').sheet1
-
-        # Get the data from the Google Sheet
         data = sheet.get_all_values()
 
         def find_array_with_empty_last_element(arrays):
@@ -81,10 +67,8 @@ def challenges(request):
                     return array[1]
             return None
 
-        # Use the data as needed in your app
         return JsonResponse(find_array_with_empty_last_element(data), safe=False)
     except Exception as e:
-        logging.error('Error: %s', e)
         return HttpResponse(e)
 
 def spotify_auth(request):
@@ -137,7 +121,7 @@ def spotify_token(request):
 
 def spotify_add_songs(request):
     access_token = request.headers.get('Authorization')
-    logging.info('access token: %s', request.headers.get('Authorization'))
+
     
     headers = {
         'Content-Type': 'application/json',
@@ -146,8 +130,8 @@ def spotify_add_songs(request):
 
     check_user = requests.get('https://api.spotify.com/v1/me', headers=headers)
 
-    # if check_user.json()['id'] != os.environ.get('SPOTIFY_CLIENT_ID'):  
-    return JsonResponse({'user': check_user.json(), 'spot_env': os.environ.get('SPOTIFY_CLIENT_ID')})
+    if check_user.json()['id'] != os.environ.get('SPOTIFY_USER_ID'):  
+        return HttpResponse('User is not authorized to update this playlist')
 
     playlists = {
         'progressive_house': {
@@ -182,23 +166,17 @@ def spotify_add_songs(request):
             tracks = random.sample(response.json()['tracks']['items'], 5)
             playlists[playlist]['seed_tracks'].extend([track['track']['id'] for track in tracks])
 
-        # logging.info('first loop: %s', playlists)
             
         new_songs_response = requests.get(recs_url, headers=headers, params={'seed_tracks': ",".join(playlists[playlist]['seed_tracks'])})
-        # logging.info('Response from Spotify: %s', new_songs_response.json())
-
-        logging.info('New songs: %s', new_songs_response.json())   
+        
         new_songs = new_songs_response.json()['tracks'][:2]
 
         spotify_uris = [f"spotify:track:{track['id']}" for track in new_songs]
 
-        logging.info('Spotify URIs: %s', spotify_uris)
-
+        
         add_tracks_url = 'https://api.spotify.com/v1/playlists/6BEoKex6bLNP9NPqJAKxTk/tracks'
-        # uris = {"uris": ",".join(spotify_uris)}
-        add_tracks_response = requests.post(add_tracks_url, headers=headers, json=spotify_uris)
-        logging.info(add_tracks_response.text)
-
+        requests.post(add_tracks_url, headers=headers, json=spotify_uris)
+        
     return HttpResponse('Spotify playlist updated successfully')
 
 
