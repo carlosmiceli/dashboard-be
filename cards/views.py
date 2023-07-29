@@ -146,8 +146,8 @@ def spotify_add_songs(request):
 
     check_user = requests.get('https://api.spotify.com/v1/me', headers=headers)
 
-    if check_user.json()['id'] != os.environ.get('SPOTIFY_CLIENT_ID'):
-        return JsonResponse({'user': check_user.json(), 'spot_env': os.environ.get('SPOTIFY_CLIENT_ID')})
+    # if check_user.json()['id'] != os.environ.get('SPOTIFY_CLIENT_ID'):  
+    return JsonResponse({'user': check_user.json(), 'spot_env': os.environ.get('SPOTIFY_CLIENT_ID')})
 
     playlists = {
         'progressive_house': {
