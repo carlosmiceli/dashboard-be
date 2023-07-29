@@ -118,7 +118,7 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
-CORS_ALLOWED_ORIGINS = ["https://daily-dashboard-c289f.firebaseapp.com/", "https://carlosmiceli.com/"]
+CORS_ALLOWED_ORIGINS = ["https://daily-dashboard-c289f.firebaseapp.com", "https://carlosmiceli.com"]
 
 # Internationalization
 # https://docs.djangoproject.com/en/dev/topics/i18n/

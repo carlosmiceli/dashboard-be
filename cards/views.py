@@ -136,7 +136,6 @@ def spotify_token(request):
         raise Exception('Failed to retrieve Spotify access token')
 
 def spotify_add_songs(request):
-    # get request headers
     access_token = request.headers.get('Authorization')
     logging.info('access token: %s', request.headers.get('Authorization'))
     
@@ -144,6 +143,11 @@ def spotify_add_songs(request):
         'Content-Type': 'application/json',
         'Authorization': f'Bearer {access_token}'
     }
+
+    check_user = requests.get('https://api.spotify.com/v1/me', headers=headers)
+
+    if check_user.status_code != 200 or check_user.json()['id'] != os.environ.get('SPOTIFY_CLIENT_ID'):
+        raise Exception('User is not authorized to update Spotify playlist')
 
     playlists = {
         'progressive_house': {
